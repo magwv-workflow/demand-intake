@@ -8,32 +8,37 @@
 <body>
 
   <div id="myForm" style="max-width:480px; margin:40px auto; font-family:sans-serif;">
-
-    <div style="margin-bottom:16px;">
-      <label style="display:block; font-weight:600; margin-bottom:4px;">ID</label>
-      <input type="text" id="matterId" readonly
-        style="width:100%; padding:8px; background:#f0f0f0; border:1px solid #ccc; border-radius:4px; color:#555; cursor:not-allowed;"/>
+    
+    <div id="thankYou" style="display:none; text-align:center; padding:40px 0;">
+      <h2 style="color:#0078d4;">Thank You!</h2>
+      <p style="color:#555;">Your submission has been received. You may close this window.</p>
     </div>
-
-    <div style="margin-bottom:16px;">
-      <label style="display:block; font-weight:600; margin-bottom:4px;">Regarding Intake</label>
-      <input type="text" id="regardingIntake" readonly
-        style="width:100%; padding:8px; background:#f0f0f0; border:1px solid #ccc; border-radius:4px; color:#555; cursor:not-allowed;"/>
+    <div id="formFields">
+      <div style="margin-bottom:16px;">
+        <label style="display:block; font-weight:600; margin-bottom:4px;">ID</label>
+        <input type="text" id="matterId" readonly
+          style="width:100%; padding:8px; background:#f0f0f0; border:1px solid #ccc; border-radius:4px; color:#555; cursor:not-allowed;"/>
+      </div>
+  
+      <div style="margin-bottom:16px;">
+        <label style="display:block; font-weight:600; margin-bottom:4px;">Regarding Intake</label>
+        <input type="text" id="regardingIntake" readonly
+          style="width:100%; padding:8px; background:#f0f0f0; border:1px solid #ccc; border-radius:4px; color:#555; cursor:not-allowed;"/>
+      </div>
+  
+      <div style="margin-bottom:16px;">
+        <label style="display:block; font-weight:600; margin-bottom:4px;">MAGC Matter Number <span style="color:red;">*</span></label>
+        <input type="text" id="magcMatterNumber" placeholder="Enter MAGC Matter Number"
+          style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;"/>
+        <span id="magcError" style="color:red; font-size:13px; display:none;">MAGC Matter Number is required.</span>
+      </div>
+  
+      <button onclick="submitForm()"
+        style="padding:10px 24px; background:#0078d4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:15px;">
+        Submit
+      </button>
+      <p id="status" style="margin-top:12px;"></p>
     </div>
-
-    <div style="margin-bottom:16px;">
-      <label style="display:block; font-weight:600; margin-bottom:4px;">MAGC Matter Number <span style="color:red;">*</span></label>
-      <input type="text" id="magcMatterNumber" placeholder="Enter MAGC Matter Number"
-        style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;"/>
-      <span id="magcError" style="color:red; font-size:13px; display:none;">MAGC Matter Number is required.</span>
-    </div>
-
-    <button onclick="submitForm()"
-      style="padding:10px 24px; background:#0078d4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:15px;">
-      Submit
-    </button>
-    <p id="status" style="margin-top:12px;"></p>
-
   </div>
 
   <script>
@@ -47,22 +52,34 @@
       document.getElementById("status").style.color = "red";
       document.getElementById("status").innerText = "This form requires a valid link with an ID. Please contact your administrator.";
     }
+    const storageKey = "submitted_" + idValue;
+    if (localStorage.getItem(storageKey)) {
+      showThankYou();
+    }
+    function showThankYou() {
+      document.getElementById("formFields").style.display = "none";
+      document.getElementById("thankYou").style.display = "block";
+    }
 
     async function submitForm() {
       const magcValue = document.getElementById("magcMatterNumber").value.trim();
       const errorEl = document.getElementById("magcError");
+      const submitBtn = document.getElementById("submitBtn");
 
       if (!idValue) {
         document.getElementById("status").style.color = "red";
         document.getElementById("status").innerText = "This form requires a valid link with an ID. Please contact your administrator.";
         return;
       }
+      
 
       if (!magcValue) {
         errorEl.style.display = "block";
         return;
       }
       errorEl.style.display = "none";
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Submitting...";
 
       const body = {
         id: idValue,
@@ -77,12 +94,21 @@
           body: JSON.stringify(body)
         });
 
-        document.getElementById("status").style.color = "green";
-        document.getElementById("status").innerText =
-          response.ok ? "Submitted successfully!" : "Something went wrong. Please try again.";
+        if (response.ok) {
+          // Lock submission for this ID in this browser
+          localStorage.setItem(storageKey, "true");
+          showThankYou();
+        } else {
+          document.getElementById("status").style.color = "red";
+          document.getElementById("status").innerText = "Something went wrong. Please try again.";
+          submitBtn.disabled = false;
+          submitBtn.innerText = "Submit";
+        }
       } catch (err) {
         document.getElementById("status").style.color = "red";
         document.getElementById("status").innerText = "Error submitting. Please try again.";
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Submit";
       }
     }
   </script>
