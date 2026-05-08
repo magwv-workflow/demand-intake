@@ -71,7 +71,7 @@
       };
 
       try {
-        const response = await fetch("https://574e6fa47883e9d9a7124939189fc1.09.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/d0d83fdbdeae4b1082b23e0bf9b3c6ec/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=bSBal1PNIbv_htJFjnFxBaF8UsKBn7mV0jRv1DUs7sE", {
+        const response = await fetch("__FLOW_URL__", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
