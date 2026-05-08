@@ -11,10 +11,11 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Inject Flow URL
-        run: sed -i 's|__FLOW_URL__|${{ secrets.FLOW_URL }}|g' index.html
+        env:
+          FLOW_URL: ${{ secrets.FLOW_URL }}
+        run: python3 -c "import os; content = open('index.html').read(); content = content.replace('__FLOW_URL__', os.environ['FLOW_URL']); open('index.html', 'w').write(content)"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
